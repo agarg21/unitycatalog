@@ -56,8 +56,8 @@ jobs:
         include:
           - spark-version: "4.0.0"
             delta-version: "4.3.1"
-            # Primary combo: runs ALL tests (unit, spark, license). Other combos run only
-            # spark connector tests since unit/license checks don't depend on Spark/Delta.
+            # Primary combo: runs ALL tests (unit, spark). Other combos run only
+            # spark connector tests since unit checks don't depend on Spark/Delta.
             validation-mode: "all-tests"
             non-blocking: false
             spark-source-build: false
@@ -109,6 +109,19 @@ jobs:
           delta-version: ${{ matrix.delta-version }}
           validation-mode: ${{ matrix.validation-mode }}
           # Rows without test-database pass an empty string, not the action's default, so fall back
-          # to H2 here; an empty value would skip the license check and fail the database lookup.
+          # to H2 here; an empty value would fail the database lookup.
           test-database: ${{ matrix.test-database || 'H2' }}
           use-spark-source-cache: ${{ matrix.spark-source-build }}
+
+  # Takes 16-27 min. Own job so it doesn't add to the primary test job's wall time.
+  license-check:
+    runs-on: ubuntu-latest
+    name: License check
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+      - name: Prepare Spark environment
+        uses: ./.github/actions/prepare-spark-env
+        with:
+          spark-version: "4.0.0"
+      - name: Run license check
+        run: build/sbt -DsparkVersion=4.0.0 -DdeltaVersion=4.3.1 licenseCheck

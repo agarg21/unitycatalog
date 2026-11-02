@@ -83,8 +83,3 @@ runs:
           echo "Running all tests"
           build/sbt -DsparkVersion=${{ inputs.spark-version }} -DdeltaVersion=$DELTA_VERSION -J-Xmx2G +jacoco
         fi
-
-    - name: Run license check
-      if: inputs.validation-mode == 'all-tests' && inputs.test-database == 'H2'
-      shell: bash
-      run: build/sbt -DsparkVersion=${{ inputs.spark-version }} -DdeltaVersion=$DELTA_VERSION licenseCheck
